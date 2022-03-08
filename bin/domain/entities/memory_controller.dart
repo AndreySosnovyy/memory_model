@@ -11,20 +11,22 @@ class MemoryController {
   /// Размер памяти устройства (измеряется в количестве ячеек памяти)
   final int size;
 
-  /// Поток новых процессов, жалающих заполучить ячейки памяти устройства
+  /// Поток новых процессов, желающих заполучить ячейки памяти устройства
   final Stream<Process> processStream;
 
   /// Конструктор
   MemoryController({
     required this.size,
     required this.processStream,
-  })  : // Количество яччек памяти больше 0
+  })  : // Количество ячеек памяти больше 0
         assert(size > 0),
         _memoryUnits = List.filled(
           size,
           MemoryUnit(id: Uuid().v4()),
           growable: false,
-        );
+        ) {
+    processStream.listen((process) => handleProcess(process));
+  }
 
   /// Обработка поступившего запроса на выдачу ячеек памяти новому процессу
   // todo: implement method

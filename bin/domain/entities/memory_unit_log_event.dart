@@ -12,7 +12,7 @@ class MemoryUnitLogEvent {
   /// Время освобождения ячейки
   late final DateTime endTime;
 
-  /// Время, в течении которго ячейка памяти была захвачена
+  /// Время, в течении которого ячейка памяти была захвачена
   late final Duration captureDuration;
 
   /// Конструктор

@@ -1,12 +1,12 @@
 /// Процесс, способный занять ячейку памяти
 class Process {
-  /// Иднетификатор процесса
+  /// Идентификатор процесса
   final String id;
 
   /// Имя процесса (по умолчанию совпадает с [id])
   late final String name;
 
-  /// Количество ячеек паямти, необходимое процессу
+  /// Количество ячеек памяти, необходимое процессу
   final int numberOfMemoryUnits;
 
   /// Продолжительность жизни процесса
@@ -25,5 +25,15 @@ class Process {
     assert(liveDuration.compareTo(Duration(milliseconds: 1)) >= 0);
 
     this.name = name ?? id;
+  }
+
+  /// Формат строки
+  factory Process.fromJson(Map<String, dynamic> json) {
+    return Process(
+      id: json['id'],
+      name: json['name'],
+      numberOfMemoryUnits: json['numberOfMemoryUnits'],
+      liveDuration: json['liveDuration'],
+    );
   }
 }
