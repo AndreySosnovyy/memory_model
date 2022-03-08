@@ -1,7 +1,7 @@
 import 'package:uuid/uuid.dart';
 
-import 'memory_unit.dart';
-import 'process.dart';
+import '../domain/entities/memory_unit.dart';
+import '../domain/entities/process.dart';
 
 /// Контроллер условной памяти устройства, который может выдавать процессам ячейки памяти
 class MemoryController {
@@ -30,7 +30,9 @@ class MemoryController {
 
   /// Обработка поступившего запроса на выдачу ячеек памяти новому процессу
   // todo: implement method
-  void handleProcess(Process process) => throw UnimplementedError();
+  void handleProcess(Process process) {
+    print(process.name);
+  }
 
   /// Возвращает соотношение количества занятых ячеек от их максимального количества
   double get unitsRatio {

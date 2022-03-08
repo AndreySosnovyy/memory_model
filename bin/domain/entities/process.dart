@@ -33,7 +33,7 @@ class Process {
       id: json['id'],
       name: json['name'],
       numberOfMemoryUnits: json['numberOfMemoryUnits'],
-      liveDuration: json['liveDuration'],
+      liveDuration: Duration(milliseconds: json['liveDuration'] as int),
     );
   }
 }

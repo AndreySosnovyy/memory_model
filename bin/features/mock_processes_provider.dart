@@ -9,8 +9,7 @@ import '../domain/entities/process.dart';
 class MockProcessesProvider {
   final StreamController<Process> processesStreamController;
 
-  late Isolate isolate;
-  late Timer timer;
+  late final Isolate isolate;
 
   /// Конструктор
   MockProcessesProvider({required this.processesStreamController});
@@ -21,8 +20,7 @@ class MockProcessesProvider {
       final random = Random();
       Timer.periodic(
         Duration(milliseconds: random.nextInt(99) + 1),
-        (Timer timer) {
-          this.timer = timer;
+        (_) {
           processesStreamController.add(Process.fromJson({
             'id': Uuid().v4(),
             'numberOfMemoryUnits': random.nextInt(9) + 1,
@@ -34,8 +32,5 @@ class MockProcessesProvider {
   }
 
   /// Останавливает поставку новых процессов в поток
-  void stop() {
-    isolate.kill(priority: Isolate.immediate);
-    timer.cancel();
-  }
+  void stop() => isolate.kill(priority: Isolate.immediate);
 }

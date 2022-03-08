@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'domain/entities/memory_controller.dart';
+import 'features/memory_controller.dart';
 import 'domain/entities/process.dart';
 import 'features/mock_processes_provider.dart';
 
@@ -34,4 +34,6 @@ void main() {
     processesStreamController: processStreamController,
   );
   mockProcessesProvider.start();
+
+  Future.delayed(Duration(seconds: 1), mockProcessesProvider.stop);
 }
