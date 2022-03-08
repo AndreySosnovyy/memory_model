@@ -3,6 +3,9 @@ import 'process.dart';
 
 ///  Ячейка памяти
 class MemoryUnit {
+  /// Идентификатор ячейки памяти
+  final String id;
+
   /// Получить стояние ячейки: свободна/занята
   bool get isBusy => process != null;
 
@@ -13,7 +16,7 @@ class MemoryUnit {
   final log = <MemoryUnitLogEvent>[];
 
   /// Конструктор
-  MemoryUnit();
+  MemoryUnit({required this.id});
 
   /// Захватить ячейку памяти
   void capture({required Process process}) {
