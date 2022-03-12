@@ -4,10 +4,10 @@ import 'dart:math';
 
 import 'package:uuid/uuid.dart';
 
-import '../domain/entities/process.dart';
+import '../domain/entities/file.dart';
 
 class MockProcessesProvider {
-  final StreamController<Process> processesStreamController;
+  final StreamController<File> processesStreamController;
 
   late final Isolate isolate;
 
@@ -21,7 +21,7 @@ class MockProcessesProvider {
       Timer.periodic(
         Duration(milliseconds: random.nextInt(99) + 1),
         (_) {
-          processesStreamController.add(Process.fromJson({
+          processesStreamController.add(File.fromJson({
             'id': Uuid().v4(),
             'numberOfMemoryUnits': random.nextInt(9) + 1,
             'liveDuration': random.nextInt(99) + 1,

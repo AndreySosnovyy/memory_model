@@ -1,7 +1,7 @@
-import '../entities/process.dart';
+import '../entities/file.dart';
 
 class OutOfMemoryCellsException implements Exception {
-  final Process process;
+  final File process;
   final String message;
 
   OutOfMemoryCellsException({

@@ -3,8 +3,8 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'features/memory_controller.dart';
-import 'domain/entities/process.dart';
-import 'features/mock_processes_provider.dart';
+import 'domain/entities/file.dart';
+import 'data/mock_processes_provider.dart';
 
 void main() {
   // Количество ячеек памяти в контроллере
@@ -20,7 +20,7 @@ void main() {
   }
 
   // Контроллер потока процессов занимающих ячейки памяти
-  final processStreamController = StreamController<Process>();
+  final processStreamController = StreamController<File>();
 
   // Модуль памяти, обрабатывающий поступающие из потока процессы
   final memoryController = MemoryController(
@@ -34,6 +34,5 @@ void main() {
     processesStreamController: processStreamController,
   );
   mockProcessesProvider.start();
-
   Future.delayed(Duration(seconds: 1), mockProcessesProvider.stop);
 }

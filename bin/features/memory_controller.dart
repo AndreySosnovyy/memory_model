@@ -1,7 +1,7 @@
 import 'package:uuid/uuid.dart';
 
 import '../domain/entities/memory_unit.dart';
-import '../domain/entities/process.dart';
+import '../domain/entities/file.dart';
 
 /// Контроллер условной памяти устройства, который может выдавать процессам ячейки памяти
 class MemoryController {
@@ -12,7 +12,7 @@ class MemoryController {
   final int size;
 
   /// Поток новых процессов, желающих заполучить ячейки памяти устройства
-  final Stream<Process> processStream;
+  final Stream<File> processStream;
 
   /// Конструктор
   MemoryController({
@@ -30,7 +30,7 @@ class MemoryController {
 
   /// Обработка поступившего запроса на выдачу ячеек памяти новому процессу
   // todo: implement method
-  void handleProcess(Process process) {
+  void handleProcess(File process) {
     print(process.name);
   }
 

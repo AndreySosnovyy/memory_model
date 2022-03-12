@@ -1,10 +1,10 @@
-import 'process.dart';
+import 'file.dart';
 
 /// Элемент лога ячейки памяти
 class MemoryUnitLogEvent {
 
-  /// Процесс, захвативший ячейку
-  final Process process;
+  /// Файл, захвативший ячейку
+  final File file;
 
   /// Время начала захвата ячейки
   final DateTime startTime;
@@ -16,5 +16,5 @@ class MemoryUnitLogEvent {
   late final Duration captureDuration;
 
   /// Конструктор
-  MemoryUnitLogEvent({required this.process}) : startTime = DateTime.now();
+  MemoryUnitLogEvent({required this.file}) : startTime = DateTime.now();
 }

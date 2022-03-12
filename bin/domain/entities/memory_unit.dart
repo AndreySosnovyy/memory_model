@@ -1,5 +1,5 @@
 import 'memory_unit_log_event.dart';
-import 'process.dart';
+import 'file.dart';
 
 ///  Ячейка памяти
 class MemoryUnit {
@@ -7,10 +7,10 @@ class MemoryUnit {
   final String id;
 
   /// Получить стояние ячейки: свободна/занята
-  bool get isBusy => process != null;
+  bool get isBusy => file != null;
 
-  /// Процесс, захвативший ячейку памяти
-  late Process? process;
+  /// Файл, захвативший ячейку памяти
+  late File? file;
 
   /// Лог ячейки памяти (хранит историю захватов ячейки памяти)
   final log = <MemoryUnitLogEvent>[];
@@ -19,14 +19,14 @@ class MemoryUnit {
   MemoryUnit({required this.id});
 
   /// Захватить ячейку памяти
-  void capture({required Process process}) {
-    this.process = process;
-    log.add(MemoryUnitLogEvent(process: process));
+  void capture({required File file}) {
+    this.file = file;
+    log.add(MemoryUnitLogEvent(file: file));
   }
 
   /// Освободить ячейку памяти
   void free() {
-    process = null;
+    file = null;
     if (log.isNotEmpty) {
       log.last.endTime = DateTime.now();
       log.last.captureDuration =
