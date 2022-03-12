@@ -22,7 +22,7 @@ void main() {
   final filesEventsStreamController = StreamController<FileEvent>();
 
   // Модуль памяти, обрабатывающий поступающие из потока файлы
-  final memoryController = MemoryController(
+  MemoryController(
     size: size,
     filesEventsStream: filesEventsStreamController.stream,
   );
@@ -32,6 +32,10 @@ void main() {
   final mockFilesProvider = MockFilesEventsProvider(
     filesEventsStreamController: filesEventsStreamController,
   );
+
+  // Запуск генератор случайных файловых событий
   mockFilesProvider.start();
+
+  // Остановка генератора спустя указанный промежуток времени
   Future.delayed(Duration(seconds: 1), mockFilesProvider.stop);
 }
