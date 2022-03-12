@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-
 import 'domain/entities/events/file_event.dart';
 import 'features/memory_controller.dart';
 import 'data/mock_files_provider.dart';

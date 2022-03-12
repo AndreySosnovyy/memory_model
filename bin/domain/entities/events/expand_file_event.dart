@@ -4,8 +4,8 @@ import 'file_event.dart';
 class ExpandFileEvent extends FileEvent {
   ExpandFileEvent(
     File file, {
-    required this.memoryModelsToRequest,
+    required this.numberOfMemoryUnitsToBeRequested,
   }) : super(file);
 
-  final int memoryModelsToRequest;
+  final int numberOfMemoryUnitsToBeRequested;
 }
