@@ -12,12 +12,12 @@ class MemoryController {
   final int size;
 
   /// Поток новых процессов, желающих заполучить ячейки памяти устройства
-  final Stream<File> processStream;
+  final Stream<File> filesStream;
 
   /// Конструктор
   MemoryController({
     required this.size,
-    required this.processStream,
+    required this.filesStream,
   })  : // Количество ячеек памяти больше 0
         assert(size > 0),
         _memoryUnits = List.filled(
@@ -25,13 +25,13 @@ class MemoryController {
           MemoryUnit(id: Uuid().v4()),
           growable: false,
         ) {
-    processStream.listen((process) => handleProcess(process));
+    filesStream.listen((file) => handleFile(file));
   }
 
   /// Обработка поступившего запроса на выдачу ячеек памяти новому процессу
   // todo: implement method
-  void handleProcess(File process) {
-    print(process.name);
+  void handleFile(File file) {
+    print(file.name);
   }
 
   /// Возвращает соотношение количества занятых ячеек от их максимального количества

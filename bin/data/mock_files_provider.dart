@@ -6,22 +6,22 @@ import 'package:uuid/uuid.dart';
 
 import '../domain/entities/file.dart';
 
-class MockProcessesProvider {
-  final StreamController<File> processesStreamController;
+class MockFilesProvider {
+  final StreamController<File> filesStreamController;
 
   late final Isolate isolate;
 
   /// Конструктор
-  MockProcessesProvider({required this.processesStreamController});
+  MockFilesProvider({required this.filesStreamController});
 
-  /// Запускает поставку новых процессов в поток
+  /// Запускает поставку новых файлов в поток
   Future start() async {
     isolate = await Isolate.spawn((_) {
       final random = Random();
       Timer.periodic(
         Duration(milliseconds: random.nextInt(99) + 1),
         (_) {
-          processesStreamController.add(File.fromJson({
+          filesStreamController.add(File.fromJson({
             'id': Uuid().v4(),
             'numberOfMemoryUnits': random.nextInt(9) + 1,
             'liveDuration': random.nextInt(99) + 1,
@@ -31,6 +31,6 @@ class MockProcessesProvider {
     }, null);
   }
 
-  /// Останавливает поставку новых процессов в поток
+  /// Останавливает поставку новых файлов  в поток
   void stop() => isolate.kill(priority: Isolate.immediate);
 }

@@ -4,7 +4,7 @@ import 'dart:io';
 
 import 'features/memory_controller.dart';
 import 'domain/entities/file.dart';
-import 'data/mock_processes_provider.dart';
+import 'data/mock_files_provider.dart';
 
 void main() {
   // Количество ячеек памяти в контроллере
@@ -20,19 +20,19 @@ void main() {
   }
 
   // Контроллер потока процессов занимающих ячейки памяти
-  final processStreamController = StreamController<File>();
+  final filesStreamController = StreamController<File>();
 
   // Модуль памяти, обрабатывающий поступающие из потока процессы
   final memoryController = MemoryController(
     size: size,
-    processStream: processStreamController.stream,
+    filesStream: filesStreamController.stream,
   );
 
   // Генерация процессов со случайным количеством занимаемых ячеек
   // памяти и случайной продолжительность жизни из отдельного изолята
-  final mockProcessesProvider = MockProcessesProvider(
-    processesStreamController: processStreamController,
+  final mockFilesProvider = MockFilesProvider(
+    filesStreamController: filesStreamController,
   );
-  mockProcessesProvider.start();
-  Future.delayed(Duration(seconds: 1), mockProcessesProvider.stop);
+  mockFilesProvider.start();
+  Future.delayed(Duration(seconds: 1), mockFilesProvider.stop);
 }
