@@ -2,8 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'domain/entities/events/file_event.dart';
 import 'features/memory_controller.dart';
-import 'domain/entities/file.dart';
 import 'data/mock_files_provider.dart';
 
 void main() {
@@ -19,19 +19,19 @@ void main() {
     print('Application terminated!');
   }
 
-  // Контроллер потока процессов занимающих ячейки памяти
-  final filesStreamController = StreamController<File>();
+  // Контроллер потока файлов занимающих ячейки памяти
+  final filesEventsStreamController = StreamController<FileEvent>();
 
-  // Модуль памяти, обрабатывающий поступающие из потока процессы
+  // Модуль памяти, обрабатывающий поступающие из потока файлы
   final memoryController = MemoryController(
     size: size,
-    filesStream: filesStreamController.stream,
+    filesEventsStream: filesEventsStreamController.stream,
   );
 
-  // Генерация процессов со случайным количеством занимаемых ячеек
+  // Генерация файлов со случайным количеством занимаемых ячеек
   // памяти и случайной продолжительность жизни из отдельного изолята
-  final mockFilesProvider = MockFilesProvider(
-    filesStreamController: filesStreamController,
+  final mockFilesProvider = MockFilesEventsProvider(
+    filesEventsStreamController: filesEventsStreamController,
   );
   mockFilesProvider.start();
   Future.delayed(Duration(seconds: 1), mockFilesProvider.stop);

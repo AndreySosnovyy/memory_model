@@ -4,15 +4,19 @@ import 'dart:math';
 
 import 'package:uuid/uuid.dart';
 
+import '../domain/entities/events/file_event.dart';
 import '../domain/entities/file.dart';
 
-class MockFilesProvider {
-  final StreamController<File> filesStreamController;
+class MockFilesEventsProvider {
+  final StreamController<FileEvent> filesEventsStreamController;
 
   late final Isolate isolate;
 
   /// Конструктор
-  MockFilesProvider({required this.filesStreamController});
+  MockFilesEventsProvider({required this.filesEventsStreamController});
+
+  /// Список сгенерированных файлов
+  final files = <File>[];
 
   /// Запускает поставку новых файлов в поток
   Future start() async {
@@ -21,11 +25,13 @@ class MockFilesProvider {
       Timer.periodic(
         Duration(milliseconds: random.nextInt(99) + 1),
         (_) {
-          filesStreamController.add(File.fromJson({
-            'id': Uuid().v4(),
-            'numberOfMemoryUnits': random.nextInt(9) + 1,
-            'liveDuration': random.nextInt(99) + 1,
-          }));
+          // todo: generate random events (+ update files list)
+          filesEventsStreamController.add(
+            FileEvent(File(
+              id: Uuid().v4(),
+              numberOfMemoryUnits: random.nextInt(9) + 1,
+            )),
+          );
         },
       );
     }, null);

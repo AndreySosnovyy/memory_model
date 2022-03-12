@@ -26,7 +26,5 @@ class File {
   late final String name;
 
   /// Количество ячеек памяти, необходимое файлу изначально
-  final int numberOfMemoryUnits;
-
-
+  int numberOfMemoryUnits;
 }
