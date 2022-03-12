@@ -10,7 +10,7 @@ class MemoryUnit {
   bool get isBusy => file != null;
 
   /// Файл, захвативший ячейку памяти
-  late File? file;
+  File? file;
 
   /// Лог ячейки памяти (хранит историю захватов ячейки памяти)
   final log = <MemoryUnitLogEvent>[];
