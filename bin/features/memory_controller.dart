@@ -13,7 +13,7 @@ class MemoryController {
   MemoryController({
     required this.size,
     required this.filesEventsStream,
-  })  : // Количество ячеек памяти больше 0
+  }) : // Количество ячеек памяти больше 0
         assert(size > 0) {
     for (int i = 0; i < size; i++) {
       _memoryUnits.add(MemoryUnit(id: Uuid().v4()));
@@ -69,6 +69,7 @@ class MemoryController {
 
   void _addFile(File file, {required _FitType fitType}) {
     switch (fitType) {
+      // Первый подходящий
       case _FitType.firstFit:
         var indexes = <int>[];
         for (var i = 0; i < _memoryUnits.length; i++) {
@@ -85,10 +86,16 @@ class MemoryController {
           }
         }
         break;
+
+      // Следующий подходящий
       case _FitType.nextFit:
         break;
+
+      // Самый подходящий
       case _FitType.bestFit:
         break;
+
+      // Самый неподходящий
       case _FitType.worstFit:
         break;
     }
@@ -96,12 +103,19 @@ class MemoryController {
 
   void _expandFile(File file, {required _FitType fitType}) {
     switch (fitType) {
+      // Первый подходящий
       case _FitType.firstFit:
         break;
+
+      // Следующий подходящий
       case _FitType.nextFit:
         break;
+
+      // Самый подходящий
       case _FitType.bestFit:
         break;
+
+      // Самый неподходящий
       case _FitType.worstFit:
         break;
     }
