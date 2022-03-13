@@ -38,24 +38,30 @@ class MemoryController {
     switch (event.runtimeType) {
       // Добавление нового файла
       case AddFileEvent:
-        print('AddFileEvent - ${event.file.name}');
+        print(
+            '-> AddFileEvent: ${event.file.name} requested ${event.file.numberOfMemoryUnits} memory units');
         files.add(event.file);
         _addFile(event.file, fitType: _FitType.firstFit);
         break;
 
       // Расширение существующего файла
       case ExpandFileEvent:
-        print('ExpandFileEvent - ${event.file.name}');
+        print(
+            '-> ExpandFileEvent: ${event.file.name} requested ${(event as ExpandFileEvent).numberOfMemoryUnitsToBeRequested} more memory units');
         files
                 .singleWhere((file) => file.id == event.file.id)
                 .numberOfMemoryUnits +=
-            (event as ExpandFileEvent).numberOfMemoryUnitsToBeRequested;
-        _expandFile(event.file, fitType: _FitType.firstFit);
+            event.numberOfMemoryUnitsToBeRequested;
+        _expandFile(
+          event.file,
+          numberOfRequestedUnits: event.numberOfMemoryUnitsToBeRequested,
+          fitType: _FitType.firstFit,
+        );
         break;
 
       // Удаление существующего файла
       case DeleteFileEvent:
-        print('DeleteFileEvent - ${event.file.name}');
+        print('-> DeleteFileEvent: ${event.file.name} freed ${event.file.numberOfMemoryUnits} memory units');
         files.remove(event.file);
         _deleteFile(event.file);
         break;
@@ -63,8 +69,11 @@ class MemoryController {
       // Неизвестное событие
       default:
         print('Undefined event type - ${event.file.name}');
+        break;
     }
-    print('Units ratio = ${(unitsRatio * 100).toInt()}%');
+
+    print('   Units ratio = ${(unitsRatio * 100).toInt()}%');
+    // for (var unit in _memoryUnits) print(unit.isBusy);
   }
 
   void _addFile(File file, {required _FitType fitType}) {
@@ -101,10 +110,30 @@ class MemoryController {
     }
   }
 
-  void _expandFile(File file, {required _FitType fitType}) {
+  void _expandFile(File file,
+      {required int numberOfRequestedUnits, required _FitType fitType}) {
     switch (fitType) {
       // Первый подходящий
       case _FitType.firstFit:
+        final indexes = <int>[];
+        for (var i = 0; i < _memoryUnits.length; i++) {
+          if (_memoryUnits[i].file?.id == file.id) {
+            indexes.add(i);
+          }
+        }
+        if (_rangeIsEmpty(
+          start: indexes.last + 1,
+          end: indexes.last + numberOfRequestedUnits,
+        )) {
+          print('   expand range is empty');
+          for (var i = indexes.last + 1;
+              i < indexes.last + numberOfRequestedUnits;
+              i++) {
+            _memoryUnits[i].capture(file: file);
+          }
+        } else {
+          print('   expand range is not empty');
+        }
         break;
 
       // Следующий подходящий
@@ -137,6 +166,14 @@ class MemoryController {
       if (memoryUnit.isBusy) numberOfCapturedMemoryUnits++;
     }
     return numberOfCapturedMemoryUnits / size;
+  }
+
+  bool _rangeIsEmpty({required int start, required int end}) {
+    bool flag = true;
+    for (var i = start; i < end; i++) {
+      if (_memoryUnits[i].isBusy) flag = false;
+    }
+    return flag;
   }
 }
 
