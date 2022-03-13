@@ -9,6 +9,8 @@ class MemoryUnit {
   /// Получить стояние ячейки: свободна/занята
   bool get isBusy => file != null;
 
+  bool get isNotBusy => !isBusy;
+
   /// Файл, захвативший ячейку памяти
   File? file;
 
@@ -33,4 +35,6 @@ class MemoryUnit {
           log.last.endTime.difference(log.last.startTime);
     }
   }
+
+
 }
