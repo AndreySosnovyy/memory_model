@@ -22,7 +22,7 @@ class MemoryController {
   }
 
   /// Память, состоящая из ячеек
-  final List _memoryUnits = <MemoryUnit>[];
+  final List<MemoryUnit> _memoryUnits = <MemoryUnit>[];
 
   /// Размер памяти устройства (измеряется в количестве ячеек памяти)
   final int size;
@@ -110,9 +110,8 @@ class MemoryController {
   void _deleteFile(File file) {
     files.remove(file);
     for (var unit in _memoryUnits) {
-      if (unit.id == file.id) {
+      if (unit.file?.id == file.id) {
         unit.free();
-        print('FREE');
       }
     }
   }

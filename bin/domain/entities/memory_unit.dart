@@ -35,6 +35,4 @@ class MemoryUnit {
           log.last.endTime.difference(log.last.startTime);
     }
   }
-
-
 }
