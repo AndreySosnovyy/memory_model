@@ -4,19 +4,11 @@ import '../domain/entities/events/add_file_event.dart';
 import '../domain/entities/events/delete_file_event.dart';
 import '../domain/entities/events/expand_file_event.dart';
 import '../domain/entities/events/file_event.dart';
+import '../domain/entities/file.dart';
 import '../domain/entities/memory_unit.dart';
 
 /// Контроллер условной памяти устройства, который может выдавать файлам ячейки памяти
 class MemoryController {
-  /// Память, состоящая из ячеек
-  late final List<MemoryUnit> _memoryUnits;
-
-  /// Размер памяти устройства (измеряется в количестве ячеек памяти)
-  final int size;
-
-  /// Поток новых файлов, желающих заполучить ячейки памяти устройства
-  final Stream<FileEvent> filesEventsStream;
-
   /// Конструктор
   MemoryController({
     required this.size,
@@ -31,30 +23,80 @@ class MemoryController {
     filesEventsStream.listen((event) => handleFile(event));
   }
 
-  /// Обработка поступившего запроса на выдачу ячеек памяти новому файлу
+  /// Память, состоящая из ячеек
+  late final List<MemoryUnit> _memoryUnits;
+
+  /// Размер памяти устройства (измеряется в количестве ячеек памяти)
+  final int size;
+
+  /// Поток новых файлов, желающих заполучить ячейки памяти устройства
+  final Stream<FileEvent> filesEventsStream;
+
+  /// Список имеющихся файлов
+  final files = <File>[];
+
+  /// Обработка поступившего события на добавление/расширения/удаления файла
   // todo: implement method
   void handleFile(FileEvent event) {
     switch (event.runtimeType) {
+      // Добавление нового файла
       case AddFileEvent:
         print('AddFileEvent - ${event.file.name}');
+        files.add(event.file);
+        _addFile(event.file, fitType: _FitType.firstFit);
         break;
+
+      // Расширение существующего файла
       case ExpandFileEvent:
         print('ExpandFileEvent - ${event.file.name}');
+        _expandFile(event.file, fitType: _FitType.firstFit);
         break;
+
+      // Удаление существующего файла
       case DeleteFileEvent:
         print('DeleteFileEvent - ${event.file.name}');
+        files.remove(event.file);
+        _deleteFile(event.file);
         break;
+
+      // Неизвестное событие
       default:
         print('Undefined event type - ${event.file.name}');
     }
   }
 
-  /// Возвращает соотношение количества занятых ячеек от их максимального количества
-  double get unitsRatio {
-    int numberOfCapturedMemoryUnits = 0;
-    for (final memoryUnit in _memoryUnits) {
-      if (memoryUnit.isBusy) numberOfCapturedMemoryUnits++;
+  void _addFile(File file, {required _FitType fitType}) {
+    switch (fitType) {
+      case _FitType.firstFit:
+        break;
+      case _FitType.nextFit:
+        break;
+      case _FitType.bestFit:
+        break;
+      case _FitType.worstFit:
+        break;
     }
-    return numberOfCapturedMemoryUnits / size;
+  }
+
+  void _expandFile(File file, {required _FitType fitType}) {
+    switch (fitType) {
+      case _FitType.firstFit:
+        break;
+      case _FitType.nextFit:
+        break;
+      case _FitType.bestFit:
+        break;
+      case _FitType.worstFit:
+        break;
+    }
+  }
+
+  void _deleteFile(File file) {
+    files.remove(file);
+    _memoryUnits
+        .where((unit) => unit.file?.id == file.id)
+        .map((unit) => unit.free());
   }
 }
+
+enum _FitType { firstFit, nextFit, bestFit, worstFit }
