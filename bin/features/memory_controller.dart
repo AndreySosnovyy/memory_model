@@ -68,7 +68,6 @@ class MemoryController {
           print("   File successfully expanded");
         } else {
           print("   [ERROR] File didn't expanded due to some error");
-
         }
         break;
 
@@ -235,7 +234,7 @@ class MemoryController {
         indexes.add(i);
       }
     }
-    if (_rangeIsEmpty(
+    if (indexes.isNotEmpty && _rangeIsEmpty(
       start: indexes.last + 1,
       end: indexes.last + 1 + numberOfRequestedUnits,
     )) {
@@ -297,6 +296,19 @@ class MemoryController {
     return false;
   }
 
+  bool _rangeIsEmpty({required int start, required int end}) {
+    print('start = $start');
+    print('end   = $end');
+    if (end < _memoryUnits.length) {
+      for (var i = start; i < end; i++) {
+        if (_memoryUnits[i].isBusy) return false;
+      }
+    } else {
+      return false;
+    }
+    return true;
+  }
+
   /// Возвращает соотношение количества занятых ячеек от их максимального количества
   double get unitsRatio {
     int numberOfCapturedMemoryUnits = 0;
@@ -304,16 +316,6 @@ class MemoryController {
       if (memoryUnit.isBusy) numberOfCapturedMemoryUnits++;
     }
     return numberOfCapturedMemoryUnits / size;
-  }
-
-  bool _rangeIsEmpty({required int start, required int end}) {
-    bool flag = true;
-    if (end <= _memoryUnits.length) {
-      for (var i = start; i < end; i++) {
-        if (_memoryUnits[i].isBusy) flag = false;
-      }
-    }
-    return flag;
   }
 }
 
