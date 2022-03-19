@@ -44,7 +44,7 @@ class MemoryController {
       case AddFileEvent:
         print(
             '-> AddFileEvent: ${event.file.name} requested ${event.file.numberOfMemoryUnits} memory units');
-        final result = _addFile(event.file, fitType: _FitType.worstFit);
+        final result = _addFile(event.file, fitType: _FitType.firstFit);
         if (result) {
           files.add(event.file);
           print("   File successfully added");
@@ -92,6 +92,24 @@ class MemoryController {
   //
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   bool _addFile(File file, {required _FitType fitType}) {
+    // todo: check if there are a segment that can accommodate full file
+    //  (if there are such segment put file in there, otherwise put file in
+    //  the longest available segment plus a segment chosen by one of these methods)
+
+    // Составление списка сегментов
+    final segments = <Segment>[Segment()];
+    for (var i = 0; i < _memoryUnits.length; i++) {
+      if (_memoryUnits[i].isBusy) {
+        if (segments.last.length > 0) {
+          segments.add(Segment());
+        } else {
+          continue;
+        }
+      } else {
+        segments.last.addMemoryUnit(_memoryUnits[i]);
+      }
+    }
+
     switch (fitType) {
       // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       //              Первый подходящий
@@ -153,20 +171,6 @@ class MemoryController {
       //             Самый подходящий
       // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       case _FitType.bestFit:
-        final segments = <Segment>[Segment()];
-        // Составление списка сегментов
-        for (var i = 0; i < _memoryUnits.length; i++) {
-          if (_memoryUnits[i].isBusy) {
-            if (segments.last.length > 0) {
-              segments.add(Segment());
-            } else {
-              continue;
-            }
-          } else {
-            segments.last.addMemoryUnit(_memoryUnits[i]);
-          }
-        }
-
         // Выбор наиболее подходящего сегмента и занятие ячеек памяти
         int error = 0;
         while (error < _memoryUnits.length) {
@@ -186,20 +190,6 @@ class MemoryController {
       //           Самый неподходящий
       // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       case _FitType.worstFit:
-        final segments = <Segment>[Segment()];
-        // Составление списка сегментов
-        for (var i = 0; i < _memoryUnits.length; i++) {
-          if (_memoryUnits[i].isBusy) {
-            if (segments.last.length > 0) {
-              segments.add(Segment());
-            } else {
-              continue;
-            }
-          } else {
-            segments.last.addMemoryUnit(_memoryUnits[i]);
-          }
-        }
-
         // Выбор наименее подходящего сегмента и занятие ячеек памяти
         Segment maxSegment = segments.first;
         for (final segment in segments) {
@@ -229,31 +219,32 @@ class MemoryController {
     required int numberOfRequestedUnits,
     required _FitType fitType,
   }) {
+    final indexes = <int>[];
+    for (var i = 0; i < _memoryUnits.length; i++) {
+      if (_memoryUnits[i].file?.id == file.id) {
+        indexes.add(i);
+      }
+    }
+    if (_rangeIsEmpty(
+      start: indexes.last + 1,
+      end: indexes.last + numberOfRequestedUnits + 1,
+    )) {
+      print('   expand range is empty');
+      for (var i = indexes.last + 1;
+          i < indexes.last + numberOfRequestedUnits + 1;
+          i++) {
+        _memoryUnits[i].capture(file: file);
+      }
+      lastCapturedUnit = indexes.last;
+    } else {
+      print('   expand range is not empty');
+    }
+
     switch (fitType) {
       // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       //            Первый подходящий
       // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       case _FitType.firstFit:
-        final indexes = <int>[];
-        for (var i = 0; i < _memoryUnits.length; i++) {
-          if (_memoryUnits[i].file?.id == file.id) {
-            indexes.add(i);
-          }
-        }
-        if (_rangeIsEmpty(
-          start: indexes.last + 1,
-          end: indexes.last + numberOfRequestedUnits + 1,
-        )) {
-          print('   expand range is empty');
-          for (var i = indexes.last + 1;
-              i < indexes.last + numberOfRequestedUnits + 1;
-              i++) {
-            _memoryUnits[i].capture(file: file);
-          }
-          lastCapturedUnit = indexes.last;
-        } else {
-          print('   expand range is not empty');
-        }
         break;
 
       // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -284,7 +275,6 @@ class MemoryController {
   //
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   void _deleteFile(File file) {
-    files.remove(file);
     for (var unit in _memoryUnits) {
       if (unit.file?.id == file.id) {
         unit.free();
