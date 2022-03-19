@@ -44,7 +44,7 @@ class MemoryController {
       case AddFileEvent:
         print(
             '-> AddFileEvent: ${event.file.name} requested ${event.file.numberOfMemoryUnits} memory units');
-        final result = _addFile(event.file, fitType: _FitType.bestFit);
+        final result = _addFile(event.file, fitType: _FitType.worstFit);
         if (result) {
           files.add(event.file);
           print("   File successfully added");
@@ -86,7 +86,9 @@ class MemoryController {
 
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   //
+  //
   //              ДОБАВЛЕНИЕ ФАЙЛА
+  //
   //
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   bool _addFile(File file, {required _FitType fitType}) {
@@ -197,6 +199,18 @@ class MemoryController {
             segments.last.addMemoryUnit(_memoryUnits[i]);
           }
         }
+
+        // Выбор наименее подходящего сегмента и занятие ячеек памяти
+        Segment maxSegment = segments.first;
+        for (final segment in segments) {
+          if (segment.length > maxSegment.length) maxSegment = segment;
+        }
+        if (maxSegment.length >= file.numberOfMemoryUnits) {
+          for (var i = 0; i < file.numberOfMemoryUnits; i++) {
+            maxSegment.memoryUnits[i].capture(file: file);
+          }
+          return true;
+        }
         break;
     }
 
@@ -205,7 +219,9 @@ class MemoryController {
 
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   //
+  //
   //             РАСШИРЕНИЕ ФАЙЛА
+  //
   //
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   void _expandFile(
@@ -262,7 +278,9 @@ class MemoryController {
 
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   //
+  //
   //              УДАЛЕНИЕ ФАЙЛА
+  //
   //
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   void _deleteFile(File file) {
