@@ -33,6 +33,9 @@ class MemoryController {
   /// Список имеющихся файлов
   final files = <File>[];
 
+  /// Последняя занятая предыдущим файлом ячейка памяти
+  int lastCapturedUnit = 0;
+
   /// Обработка поступившего события на добавление/расширения/удаления файла
   void handleFile(FileEvent event) {
     switch (event.runtimeType) {
@@ -49,9 +52,8 @@ class MemoryController {
         print(
             '-> ExpandFileEvent: ${event.file.name} requested ${(event as ExpandFileEvent).numberOfMemoryUnitsToBeRequested} more memory units');
         files
-                .singleWhere((file) => file.id == event.file.id)
-                .numberOfMemoryUnits +=
-            event.numberOfMemoryUnitsToBeRequested;
+            .singleWhere((file) => file.id == event.file.id)
+            .numberOfMemoryUnits += event.numberOfMemoryUnitsToBeRequested;
         _expandFile(
           event.file,
           numberOfRequestedUnits: event.numberOfMemoryUnitsToBeRequested,
@@ -61,7 +63,8 @@ class MemoryController {
 
       // Удаление существующего файла
       case DeleteFileEvent:
-        print('-> DeleteFileEvent: ${event.file.name} freed ${event.file.numberOfMemoryUnits} memory units');
+        print(
+            '-> DeleteFileEvent: ${event.file.name} freed ${event.file.numberOfMemoryUnits} memory units');
         files.remove(event.file);
         _deleteFile(event.file);
         break;
@@ -110,8 +113,11 @@ class MemoryController {
     }
   }
 
-  void _expandFile(File file,
-      {required int numberOfRequestedUnits, required _FitType fitType}) {
+  void _expandFile(
+    File file, {
+    required int numberOfRequestedUnits,
+    required _FitType fitType,
+  }) {
     switch (fitType) {
       // Первый подходящий
       case _FitType.firstFit:
@@ -123,11 +129,11 @@ class MemoryController {
         }
         if (_rangeIsEmpty(
           start: indexes.last + 1,
-          end: indexes.last + numberOfRequestedUnits,
+          end: indexes.last + numberOfRequestedUnits + 1,
         )) {
           print('   expand range is empty');
           for (var i = indexes.last + 1;
-              i < indexes.last + numberOfRequestedUnits;
+              i < indexes.last + numberOfRequestedUnits + 1;
               i++) {
             _memoryUnits[i].capture(file: file);
           }

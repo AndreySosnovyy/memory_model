@@ -1,3 +1,4 @@
+import '../exceptions/already_captured_exception.dart';
 import 'memory_unit_log_event.dart';
 import 'file.dart';
 
@@ -22,8 +23,12 @@ class MemoryUnit {
 
   /// Захватить ячейку памяти
   void capture({required File file}) {
-    this.file = file;
-    log.add(MemoryUnitLogEvent(file: file));
+    if (isNotBusy) {
+      this.file = file;
+      log.add(MemoryUnitLogEvent(file: file));
+    } else {
+      throw AlreadyCapturedException(unit: this);
+    }
   }
 
   /// Освободить ячейку памяти
