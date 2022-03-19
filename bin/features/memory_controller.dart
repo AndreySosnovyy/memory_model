@@ -82,9 +82,13 @@ class MemoryController {
     }
 
     print('   Units ratio = ${unitsRatio * 100} %');
-    // for (var unit in _memoryUnits) print(unit.isBusy);
   }
 
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  //
+  //              ДОБАВЛЕНИЕ ФАЙЛА
+  //
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   bool _addFile(File file, {required _FitType fitType}) {
     switch (fitType) {
       // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -199,13 +203,20 @@ class MemoryController {
     return false;
   }
 
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  //
+  //             РАСШИРЕНИЕ ФАЙЛА
+  //
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   void _expandFile(
     File file, {
     required int numberOfRequestedUnits,
     required _FitType fitType,
   }) {
     switch (fitType) {
-      // Первый подходящий
+      // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      //            Первый подходящий
+      // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       case _FitType.firstFit:
         final indexes = <int>[];
         for (var i = 0; i < _memoryUnits.length; i++) {
@@ -229,20 +240,31 @@ class MemoryController {
         }
         break;
 
-      // Следующий подходящий
+      // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      //           Следующий подходящий
+      // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       case _FitType.nextFit:
         break;
 
-      // Самый подходящий
+      // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      //              Самый подходящий
+      // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       case _FitType.bestFit:
         break;
 
-      // Самый неподходящий
+      // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      //            Самый неподходящий
+      // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       case _FitType.worstFit:
         break;
     }
   }
 
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  //
+  //              УДАЛЕНИЕ ФАЙЛА
+  //
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   void _deleteFile(File file) {
     files.remove(file);
     for (var unit in _memoryUnits) {
