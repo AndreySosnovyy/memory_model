@@ -49,7 +49,7 @@ class MemoryController {
           files.add(event.file);
           print("   File successfully added");
         } else {
-          print("   File didn't added due to some error");
+          print("   [ERROR] File didn't added due to some error");
         }
         break;
 
@@ -57,22 +57,32 @@ class MemoryController {
       case ExpandFileEvent:
         print(
             '-> ExpandFileEvent: ${event.file.name} requested ${(event as ExpandFileEvent).numberOfMemoryUnitsToBeRequested} more memory units');
-        files
-            .singleWhere((file) => file.id == event.file.id)
-            .numberOfMemoryUnits += event.numberOfMemoryUnitsToBeRequested;
-        _expandFile(
+        if (_expandFile(
           event.file,
           numberOfRequestedUnits: event.numberOfMemoryUnitsToBeRequested,
           fitType: _FitType.firstFit,
-        );
+        )) {
+          files
+              .singleWhere((file) => file.id == event.file.id)
+              .numberOfMemoryUnits += event.numberOfMemoryUnitsToBeRequested;
+          print("   File successfully expanded");
+        } else {
+          print("   [ERROR] File didn't expanded due to some error");
+
+        }
         break;
 
       // Удаление существующего файла
       case DeleteFileEvent:
         print(
             '-> DeleteFileEvent: ${event.file.name} freed ${event.file.numberOfMemoryUnits} memory units');
-        files.remove(event.file);
-        _deleteFile(event.file);
+        final result = _deleteFile(event.file);
+        if (result) {
+          files.remove(event.file);
+          print("   File successfully removed");
+        } else {
+          print("   [ERROR] File didn't removed due to some error");
+        }
         break;
 
       // Неизвестное событие
@@ -214,7 +224,7 @@ class MemoryController {
   //
   //
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  void _expandFile(
+  bool _expandFile(
     File file, {
     required int numberOfRequestedUnits,
     required _FitType fitType,
@@ -227,44 +237,45 @@ class MemoryController {
     }
     if (_rangeIsEmpty(
       start: indexes.last + 1,
-      end: indexes.last + numberOfRequestedUnits + 1,
+      end: indexes.last + 1 + numberOfRequestedUnits,
     )) {
-      print('   expand range is empty');
       for (var i = indexes.last + 1;
-          i < indexes.last + numberOfRequestedUnits + 1;
+          i < indexes.last + 1 + numberOfRequestedUnits;
           i++) {
         _memoryUnits[i].capture(file: file);
       }
       lastCapturedUnit = indexes.last;
+      print('   file expanded next to the previous part of the file');
+      return true;
     } else {
       print('   expand range is not empty');
+      switch (fitType) {
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        //            Первый подходящий
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        case _FitType.firstFit:
+          break;
+
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        //           Следующий подходящий
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        case _FitType.nextFit:
+          break;
+
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        //              Самый подходящий
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        case _FitType.bestFit:
+          break;
+
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        //            Самый неподходящий
+        // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        case _FitType.worstFit:
+          break;
+      }
     }
-
-    switch (fitType) {
-      // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      //            Первый подходящий
-      // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      case _FitType.firstFit:
-        break;
-
-      // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      //           Следующий подходящий
-      // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      case _FitType.nextFit:
-        break;
-
-      // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      //              Самый подходящий
-      // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      case _FitType.bestFit:
-        break;
-
-      // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      //            Самый неподходящий
-      // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      case _FitType.worstFit:
-        break;
-    }
+    return false;
   }
 
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -274,12 +285,16 @@ class MemoryController {
   //
   //
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  void _deleteFile(File file) {
-    for (var unit in _memoryUnits) {
-      if (unit.file?.id == file.id) {
-        unit.free();
+  bool _deleteFile(File file) {
+    if (files.contains(file)) {
+      for (var unit in _memoryUnits) {
+        if (unit.file?.id == file.id) {
+          unit.free();
+        }
       }
+      return true;
     }
+    return false;
   }
 
   /// Возвращает соотношение количества занятых ячеек от их максимального количества
@@ -293,8 +308,10 @@ class MemoryController {
 
   bool _rangeIsEmpty({required int start, required int end}) {
     bool flag = true;
-    for (var i = start; i < end; i++) {
-      if (_memoryUnits[i].isBusy) flag = false;
+    if (end <= _memoryUnits.length) {
+      for (var i = start; i < end; i++) {
+        if (_memoryUnits[i].isBusy) flag = false;
+      }
     }
     return flag;
   }

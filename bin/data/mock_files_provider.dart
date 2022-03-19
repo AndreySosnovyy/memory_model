@@ -6,6 +6,7 @@ import 'package:uuid/uuid.dart';
 
 import '../domain/entities/events/add_file_event.dart';
 import '../domain/entities/events/delete_file_event.dart';
+import '../domain/entities/events/expand_file_event.dart';
 import '../domain/entities/events/file_event.dart';
 import '../domain/entities/file.dart';
 
@@ -49,21 +50,21 @@ class MockFilesEventsProvider {
 
             // Расширение существующего файла
             case 1:
-              // if (files.isNotEmpty) {
-              //   final numberOfRequestingMemoryUnits =
-              //       randomNumber(min: 1, max: 10);
-              //   final fileToBeExpanded = randomExistingFile;
-              //   files
-              //       .singleWhere((file) => file.id == fileToBeExpanded.id)
-              //       .numberOfMemoryUnits += numberOfRequestingMemoryUnits;
-              //   filesEventsStreamController.add(
-              //     ExpandFileEvent(
-              //       fileToBeExpanded,
-              //       numberOfMemoryUnitsToBeRequested:
-              //           numberOfRequestingMemoryUnits,
-              //     ),
-              //   );
-              // }
+              if (files.isNotEmpty) {
+                final numberOfRequestingMemoryUnits =
+                    randomNumber(min: 1, max: 10);
+                final fileToBeExpanded = randomExistingFile;
+                files
+                    .singleWhere((file) => file.id == fileToBeExpanded.id)
+                    .numberOfMemoryUnits += numberOfRequestingMemoryUnits;
+                filesEventsStreamController.add(
+                  ExpandFileEvent(
+                    fileToBeExpanded,
+                    numberOfMemoryUnitsToBeRequested:
+                        numberOfRequestingMemoryUnits,
+                  ),
+                );
+              }
               break;
 
             // Удаление существующего файла
