@@ -87,7 +87,9 @@ class MemoryController {
 
   bool _addFile(File file, {required _FitType fitType}) {
     switch (fitType) {
-      // Первый подходящий
+      // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      //              Первый подходящий
+      // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       case _FitType.firstFit:
         var indexes = <int>[];
         for (var i = 0; i < _memoryUnits.length; i++) {
@@ -106,7 +108,9 @@ class MemoryController {
         }
         break;
 
-      // Следующий подходящий
+      // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      //            Следующий подходящий
+      // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       case _FitType.nextFit:
         var indexes = <int>[];
         for (var i = lastCapturedUnit; i < _memoryUnits.length; i++) {
@@ -139,31 +143,27 @@ class MemoryController {
         }
         break;
 
-      // Самый подходящий
+      // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      //             Самый подходящий
+      // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       case _FitType.bestFit:
-        final segments = <Segment>[];
+        final segments = <Segment>[Segment()];
         // Составление списка сегментов
         for (var i = 0; i < _memoryUnits.length; i++) {
-          if (segments.isEmpty) {
-            segments.add(Segment());
-            segments.last.addMemoryUnit(_memoryUnits[i]);
-          } else {
-            if (_memoryUnits[i].isBusy) {
-              if (segments.last.length > 0) {
-                segments.add(Segment());
-              } else {
-                continue;
-              }
+          if (_memoryUnits[i].isBusy) {
+            if (segments.last.length > 0) {
+              segments.add(Segment());
             } else {
-              segments.last.addMemoryUnit(_memoryUnits[i]);
+              continue;
             }
+          } else {
+            segments.last.addMemoryUnit(_memoryUnits[i]);
           }
         }
 
         // Выбор наиболее подходящего сегмента и занятие ячеек памяти
         int error = 0;
         while (error < _memoryUnits.length) {
-          // print(error);
           for (final segment in segments) {
             if (segment.length - error == file.numberOfMemoryUnits) {
               for (var i = 0; i < file.numberOfMemoryUnits; i++) {
@@ -174,11 +174,25 @@ class MemoryController {
           }
           error++;
         }
-
         break;
 
-      // Самый неподходящий
+      // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      //           Самый неподходящий
+      // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       case _FitType.worstFit:
+        final segments = <Segment>[Segment()];
+        // Составление списка сегментов
+        for (var i = 0; i < _memoryUnits.length; i++) {
+          if (_memoryUnits[i].isBusy) {
+            if (segments.last.length > 0) {
+              segments.add(Segment());
+            } else {
+              continue;
+            }
+          } else {
+            segments.last.addMemoryUnit(_memoryUnits[i]);
+          }
+        }
         break;
     }
 
