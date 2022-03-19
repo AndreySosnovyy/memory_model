@@ -4,6 +4,7 @@ import '../domain/entities/events/add_file_event.dart';
 import '../domain/entities/events/delete_file_event.dart';
 import '../domain/entities/events/expand_file_event.dart';
 import '../domain/entities/events/file_event.dart';
+import '../domain/entities/events/segment.dart';
 import '../domain/entities/file.dart';
 import '../domain/entities/memory_unit.dart';
 
@@ -43,8 +44,13 @@ class MemoryController {
       case AddFileEvent:
         print(
             '-> AddFileEvent: ${event.file.name} requested ${event.file.numberOfMemoryUnits} memory units');
-        files.add(event.file);
-        _addFile(event.file, fitType: _FitType.firstFit);
+        final result = _addFile(event.file, fitType: _FitType.bestFit);
+        if (result) {
+          files.add(event.file);
+          print("   File successfully added");
+        } else {
+          print("   File didn't added due to some error");
+        }
         break;
 
       // Расширение существующего файла
@@ -75,11 +81,11 @@ class MemoryController {
         break;
     }
 
-    print('   Units ratio = ${(unitsRatio * 100).toInt()}%');
+    print('   Units ratio = ${unitsRatio * 100} %');
     // for (var unit in _memoryUnits) print(unit.isBusy);
   }
 
-  void _addFile(File file, {required _FitType fitType}) {
+  bool _addFile(File file, {required _FitType fitType}) {
     switch (fitType) {
       // Первый подходящий
       case _FitType.firstFit:
@@ -91,7 +97,8 @@ class MemoryController {
               for (var index in indexes) {
                 _memoryUnits[index].capture(file: file);
               }
-              break;
+              lastCapturedUnit = indexes.last;
+              return true;
             }
           } else {
             indexes.clear();
@@ -101,16 +108,81 @@ class MemoryController {
 
       // Следующий подходящий
       case _FitType.nextFit:
+        var indexes = <int>[];
+        for (var i = lastCapturedUnit; i < _memoryUnits.length; i++) {
+          if (_memoryUnits[i].isNotBusy) {
+            indexes.add(i);
+            if (indexes.length == file.numberOfMemoryUnits) {
+              for (var index in indexes) {
+                _memoryUnits[index].capture(file: file);
+              }
+              lastCapturedUnit = indexes.last;
+              return true;
+            }
+          } else {
+            indexes.clear();
+          }
+        }
+        for (var i = 0; i < lastCapturedUnit; i++) {
+          if (_memoryUnits[i].isNotBusy) {
+            indexes.add(i);
+            if (indexes.length == file.numberOfMemoryUnits) {
+              for (var index in indexes) {
+                _memoryUnits[index].capture(file: file);
+              }
+              lastCapturedUnit = indexes.last;
+              return true;
+            }
+          } else {
+            indexes.clear();
+          }
+        }
         break;
 
       // Самый подходящий
       case _FitType.bestFit:
+        final segments = <Segment>[];
+        // Составление списка сегментов
+        for (var i = 0; i < _memoryUnits.length; i++) {
+          if (segments.isEmpty) {
+            segments.add(Segment());
+            segments.last.addMemoryUnit(_memoryUnits[i]);
+          } else {
+            if (_memoryUnits[i].isBusy) {
+              if (segments.last.length > 0) {
+                segments.add(Segment());
+              } else {
+                continue;
+              }
+            } else {
+              segments.last.addMemoryUnit(_memoryUnits[i]);
+            }
+          }
+        }
+
+        // Выбор наиболее подходящего сегмента и занятие ячеек памяти
+        int error = 0;
+        while (error < _memoryUnits.length) {
+          // print(error);
+          for (final segment in segments) {
+            if (segment.length - error == file.numberOfMemoryUnits) {
+              for (var i = 0; i < file.numberOfMemoryUnits; i++) {
+                segment.memoryUnits[i].capture(file: file);
+              }
+              return true;
+            }
+          }
+          error++;
+        }
+
         break;
 
       // Самый неподходящий
       case _FitType.worstFit:
         break;
     }
+
+    return false;
   }
 
   void _expandFile(
@@ -137,6 +209,7 @@ class MemoryController {
               i++) {
             _memoryUnits[i].capture(file: file);
           }
+          lastCapturedUnit = indexes.last;
         } else {
           print('   expand range is not empty');
         }
