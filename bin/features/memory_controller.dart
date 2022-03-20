@@ -95,10 +95,11 @@ class MemoryController {
 
     print('   Units ratio = ${unitsRatio * 100} %');
 
-    // todo: print outputs
-    print(averageNumberOfSegmentsPerFile);
+    print('   AverageNumberOfSegmentsPerFile - $averageNumberOfSegmentsPerFile');
+    print('   AverageLengthOfSegment - $averageLengthOfSegment');
   }
 
+  /// Возвращает среднее количество сегментов на файл или null, если нет ни одного файла
   double? get averageNumberOfSegmentsPerFile {
     final listOfSegments = <Segment>[Segment()];
     for (var i = 0; i < _memoryUnits.length; i++) {
@@ -115,6 +116,30 @@ class MemoryController {
     }
 
     final result = listOfSegments.length / MockFilesEventsProvider.files.length;
+    return result == double.infinity ? null : result;
+  }
+
+  /// Возвращает среднюю длину сегмента или null, если нет ни одного сегмента
+  double? get averageLengthOfSegment {
+    final listOfSegments = <Segment>[Segment()];
+    for (var i = 0; i < _memoryUnits.length; i++) {
+      if (_memoryUnits[i].file != null) {
+        if (listOfSegments.last.memoryUnits.isEmpty) {
+          listOfSegments.last.addMemoryUnit(_memoryUnits[i]);
+          continue;
+        }
+        if (listOfSegments.last.memoryUnits.last.file != _memoryUnits[i].file) {
+          listOfSegments.add(Segment());
+        }
+        listOfSegments.last.addMemoryUnit(_memoryUnits[i]);
+      }
+    }
+
+    var numberOfSegments = 0;
+    for (var i = 0; i < listOfSegments.length; i++) {
+      numberOfSegments += listOfSegments[i].length;
+    }
+    final result = numberOfSegments / listOfSegments.length;
     return result == double.infinity ? null : result;
   }
 
@@ -296,10 +321,10 @@ class MemoryController {
         }
       }
       var remainToCapture = numberOfRequestedUnits - numberOfCapturedUnits;
-      print('   expand range is not empty');
+      print('   Expand range is not empty');
       print(
-          '   captured $numberOfCapturedUnits memory units next to previous part of file');
-      print('   remain to capture $remainToCapture more memory units');
+          '   Captured $numberOfCapturedUnits memory units next to previous part of file');
+      print('   Remain to capture $remainToCapture more memory units');
       switch (fitType) {
         // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         //            Первый подходящий
@@ -314,14 +339,14 @@ class MemoryController {
                   _memoryUnits[index].capture(file: file);
                 }
                 lastCapturedUnit = indexes.last;
-                print('   captured $remainToCapture more memory units');
+                print('   Captured $remainToCapture more memory units');
                 return true;
               }
             } else {
               indexes.clear();
             }
           }
-          print('   unable to capture $remainToCapture more memory units');
+          print('   Unable to capture $remainToCapture more memory units');
           break;
 
         // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -337,7 +362,7 @@ class MemoryController {
                   _memoryUnits[index].capture(file: file);
                 }
                 lastCapturedUnit = indexes.last;
-                print('   captured $remainToCapture more memory units');
+                print('   Captured $remainToCapture more memory units');
                 return true;
               }
             } else {
@@ -359,7 +384,7 @@ class MemoryController {
               indexes.clear();
             }
           }
-          print('   unable to capture $remainToCapture more memory units');
+          print('   Unable to capture $remainToCapture more memory units');
           break;
 
         // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -374,13 +399,13 @@ class MemoryController {
                 for (var i = 0; i < remainToCapture; i++) {
                   segment.memoryUnits[i].capture(file: file);
                 }
-                print('   captured $remainToCapture more memory units');
+                print('   Captured $remainToCapture more memory units');
                 return true;
               }
             }
             error++;
           }
-          print('   unable to capture $remainToCapture more memory units');
+          print('   Unable to capture $remainToCapture more memory units');
           break;
 
         // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -396,10 +421,10 @@ class MemoryController {
             for (var i = 0; i < remainToCapture; i++) {
               maxSegment.memoryUnits[i].capture(file: file);
             }
-            print('   captured $remainToCapture more memory units');
+            print('   Captured $remainToCapture more memory units');
             return true;
           }
-          print('   unable to capture $remainToCapture more memory units');
+          print('   Unable to capture $remainToCapture more memory units');
           break;
       }
     }
