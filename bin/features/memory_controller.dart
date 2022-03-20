@@ -40,7 +40,7 @@ class MemoryController {
 
   /// Обработка поступившего события на добавление/расширения/удаления файла
   void handleFile(FileEvent event) {
-    final _FitType _fitType = _FitType.worstFit;
+    final _FitType _fitType = _FitType.firstFit;
 
     switch (event.runtimeType) {
       // Добавление нового файла
@@ -94,6 +94,28 @@ class MemoryController {
     }
 
     print('   Units ratio = ${unitsRatio * 100} %');
+
+    // todo: print outputs
+    print(averageNumberOfSegmentsPerFile);
+  }
+
+  double? get averageNumberOfSegmentsPerFile {
+    final listOfSegments = <Segment>[Segment()];
+    for (var i = 0; i < _memoryUnits.length; i++) {
+      if (_memoryUnits[i].file != null) {
+        if (listOfSegments.last.memoryUnits.isEmpty) {
+          listOfSegments.last.addMemoryUnit(_memoryUnits[i]);
+          continue;
+        }
+        if (listOfSegments.last.memoryUnits.last.file != _memoryUnits[i].file) {
+          listOfSegments.add(Segment());
+        }
+        listOfSegments.last.addMemoryUnit(_memoryUnits[i]);
+      }
+    }
+
+    final result = listOfSegments.length / MockFilesEventsProvider.files.length;
+    return result == double.infinity ? null : result;
   }
 
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -215,7 +237,6 @@ class MemoryController {
         }
         break;
     }
-
     return false;
   }
 
@@ -345,7 +366,7 @@ class MemoryController {
         //              Самый подходящий
         // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         case _FitType.bestFit:
-        // Выбор наиболее подходящего сегмента и занятие ячеек памяти
+          // Выбор наиболее подходящего сегмента и занятие ячеек памяти
           int error = 0;
           while (error < _memoryUnits.length) {
             for (final segment in segments) {
@@ -366,7 +387,7 @@ class MemoryController {
         //            Самый неподходящий
         // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         case _FitType.worstFit:
-        // Выбор наименее подходящего сегмента и занятие ячеек памяти
+          // Выбор наименее подходящего сегмента и занятие ячеек памяти
           Segment maxSegment = segments.first;
           for (final segment in segments) {
             if (segment.length > maxSegment.length) maxSegment = segment;

@@ -10,7 +10,7 @@ import '../domain/entities/events/expand_file_event.dart';
 import '../domain/entities/events/file_event.dart';
 import '../domain/entities/file.dart';
 
-final _random = Random();
+final _random = Random(123);
 
 int randomNumber({required int min, required int max}) =>
     min + _random.nextInt(max - min);

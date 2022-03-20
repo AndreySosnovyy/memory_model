@@ -37,6 +37,5 @@ void main() {
   mockFilesProvider.start();
 
   // Остановка генератора спустя указанный промежуток времени
-  // Future.delayed(Duration(seconds: 360), mockFilesProvider.stop);
-  while (true) {}
+  Future.delayed(Duration(seconds: 60), mockFilesProvider.stop);
 }
