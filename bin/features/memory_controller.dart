@@ -1,5 +1,6 @@
 import 'package:uuid/uuid.dart';
 
+import '../data/mock_files_provider.dart';
 import '../domain/entities/events/add_file_event.dart';
 import '../domain/entities/events/delete_file_event.dart';
 import '../domain/entities/events/expand_file_event.dart';
@@ -31,8 +32,8 @@ class MemoryController {
   /// Поток новых файлов, желающих заполучить ячейки памяти устройства
   final Stream<FileEvent> filesEventsStream;
 
-  /// Список имеющихся файлов
-  final files = <File>[];
+  /// Список имеющихся файлов (Не используется!)
+  // final files = <File>[];
 
   /// Последняя занятая предыдущим файлом ячейка памяти
   int lastCapturedUnit = 0;
@@ -46,7 +47,7 @@ class MemoryController {
             '-> AddFileEvent: ${event.file.name} requested ${event.file.numberOfMemoryUnits} memory units');
         final result = _addFile(event.file, fitType: _FitType.firstFit);
         if (result) {
-          files.add(event.file);
+          MockFilesEventsProvider.files.add(event.file);
           print("   File successfully added");
         } else {
           print("   [ERROR] File didn't added due to some error");
@@ -62,7 +63,7 @@ class MemoryController {
           numberOfRequestedUnits: event.numberOfMemoryUnitsToBeRequested,
           fitType: _FitType.firstFit,
         )) {
-          files
+          MockFilesEventsProvider.files
               .singleWhere((file) => file.id == event.file.id)
               .numberOfMemoryUnits += event.numberOfMemoryUnitsToBeRequested;
           print("   File successfully expanded");
@@ -77,7 +78,7 @@ class MemoryController {
             '-> DeleteFileEvent: ${event.file.name} freed ${event.file.numberOfMemoryUnits} memory units');
         final result = _deleteFile(event.file);
         if (result) {
-          files.remove(event.file);
+          MockFilesEventsProvider.files.remove(event.file);
           print("   File successfully removed");
         } else {
           print("   [ERROR] File didn't removed due to some error");
@@ -285,7 +286,7 @@ class MemoryController {
   //
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   bool _deleteFile(File file) {
-    if (files.contains(file)) {
+    if (MockFilesEventsProvider.files.contains(file)) {
       for (var unit in _memoryUnits) {
         if (unit.file?.id == file.id) {
           unit.free();
@@ -296,10 +297,13 @@ class MemoryController {
     return false;
   }
 
+  /// Проверяет свободны ли ячейки памяти в заданном диапазоне.
+  /// Возвращает true, если все ячейки свободны, возвращает false, если есть хотя бы
+  /// одна занятая ячейка или диапазон задан некорректно
   bool _rangeIsEmpty({required int start, required int end}) {
-    print('start = $start');
-    print('end   = $end');
-    if (end < _memoryUnits.length) {
+    print('   start - $start');
+    print('   end - $end');
+    if (start >= 0 && end < _memoryUnits.length) {
       for (var i = start; i < end; i++) {
         if (_memoryUnits[i].isBusy) return false;
       }

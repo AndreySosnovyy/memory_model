@@ -24,7 +24,7 @@ class MockFilesEventsProvider {
   MockFilesEventsProvider({required this.filesEventsStreamController});
 
   /// Список сгенерированных файлов
-  final files = <File>[];
+  static final files = <File>[];
 
   /// Возвращает случайный ранее созданный файл
   File get randomExistingFile => files[randomNumber(min: 0, max: files.length)];
@@ -42,7 +42,7 @@ class MockFilesEventsProvider {
                 id: Uuid().v4(),
                 numberOfMemoryUnits: randomNumber(min: 1, max: 10),
               );
-              files.add(generatedFile);
+              // files.add(generatedFile);
               filesEventsStreamController.add(
                 AddFileEvent(generatedFile),
               );
@@ -71,7 +71,7 @@ class MockFilesEventsProvider {
             case 2:
               if (files.isNotEmpty) {
                 final fileToBeDeleted = randomExistingFile;
-                files.remove(fileToBeDeleted);
+                // files.remove(fileToBeDeleted);
                 filesEventsStreamController.add(
                   DeleteFileEvent(fileToBeDeleted),
                 );
