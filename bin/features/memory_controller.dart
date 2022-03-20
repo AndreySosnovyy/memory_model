@@ -40,12 +40,14 @@ class MemoryController {
 
   /// Обработка поступившего события на добавление/расширения/удаления файла
   void handleFile(FileEvent event) {
+    final _FitType _fitType = _FitType.nextFit;
+
     switch (event.runtimeType) {
       // Добавление нового файла
       case AddFileEvent:
         print(
             '-> AddFileEvent: ${event.file.name} requested ${event.file.numberOfMemoryUnits} memory units');
-        final result = _addFile(event.file, fitType: _FitType.firstFit);
+        final result = _addFile(event.file, fitType: _fitType);
         if (result) {
           MockFilesEventsProvider.files.add(event.file);
           print("   File successfully added");
@@ -61,7 +63,7 @@ class MemoryController {
         if (_expandFile(
           event.file,
           numberOfRequestedUnits: event.numberOfMemoryUnitsToBeRequested,
-          fitType: _FitType.firstFit,
+          fitType: _fitType,
         )) {
           MockFilesEventsProvider.files
               .singleWhere((file) => file.id == event.file.id)
@@ -229,16 +231,31 @@ class MemoryController {
     required int numberOfRequestedUnits,
     required _FitType fitType,
   }) {
+    // Составление списка сегментов
+    final segments = <Segment>[Segment()];
+    for (var i = 0; i < _memoryUnits.length; i++) {
+      if (_memoryUnits[i].isBusy) {
+        if (segments.last.length > 0) {
+          segments.add(Segment());
+        } else {
+          continue;
+        }
+      } else {
+        segments.last.addMemoryUnit(_memoryUnits[i]);
+      }
+    }
+
     final indexes = <int>[];
     for (var i = 0; i < _memoryUnits.length; i++) {
       if (_memoryUnits[i].file?.id == file.id) {
         indexes.add(i);
       }
     }
-    if (indexes.isNotEmpty && _rangeIsEmpty(
-      start: indexes.last + 1,
-      end: indexes.last + 1 + numberOfRequestedUnits,
-    )) {
+    if (indexes.isNotEmpty &&
+        _rangeIsEmpty(
+          start: indexes.last + 1,
+          end: indexes.last + 1 + numberOfRequestedUnits,
+        )) {
       for (var i = indexes.last + 1;
           i < indexes.last + 1 + numberOfRequestedUnits;
           i++) {
@@ -248,30 +265,120 @@ class MemoryController {
       print('   file expanded next to the previous part of the file');
       return true;
     } else {
+      var numberOfCapturedUnits = 0;
+      for (var i = indexes.last + 1; i < file.numberOfMemoryUnits; i++) {
+        if (_memoryUnits[i].isNotBusy) {
+          _memoryUnits[i].capture(file: file);
+          numberOfCapturedUnits += 1;
+        } else {
+          break;
+        }
+      }
+      var remainToCapture = numberOfRequestedUnits - numberOfCapturedUnits;
       print('   expand range is not empty');
+      print(
+          '   captured $numberOfCapturedUnits memory units next to previous part of file');
+      print('   remain to capture $remainToCapture more memory units');
       switch (fitType) {
         // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         //            Первый подходящий
         // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         case _FitType.firstFit:
+          var indexes = <int>[];
+          for (var i = 0; i < _memoryUnits.length; i++) {
+            if (_memoryUnits[i].isNotBusy) {
+              indexes.add(i);
+              if (indexes.length == remainToCapture) {
+                for (var index in indexes) {
+                  _memoryUnits[index].capture(file: file);
+                }
+                lastCapturedUnit = indexes.last;
+                print('   captured $remainToCapture more memory units');
+                return true;
+              }
+            } else {
+              indexes.clear();
+            }
+          }
+          print('   unable to capture $remainToCapture more memory units');
           break;
 
         // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         //           Следующий подходящий
         // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         case _FitType.nextFit:
+          var indexes = <int>[];
+          for (var i = lastCapturedUnit; i < _memoryUnits.length; i++) {
+            if (_memoryUnits[i].isNotBusy) {
+              indexes.add(i);
+              if (indexes.length == remainToCapture) {
+                for (var index in indexes) {
+                  _memoryUnits[index].capture(file: file);
+                }
+                lastCapturedUnit = indexes.last;
+                print('   captured $remainToCapture more memory units');
+                return true;
+              }
+            } else {
+              indexes.clear();
+            }
+          }
+          for (var i = 0; i < lastCapturedUnit; i++) {
+            if (_memoryUnits[i].isNotBusy) {
+              indexes.add(i);
+              if (indexes.length == remainToCapture) {
+                for (var index in indexes) {
+                  _memoryUnits[index].capture(file: file);
+                }
+                lastCapturedUnit = indexes.last;
+                print('   captured $remainToCapture more memory units');
+                return true;
+              }
+            } else {
+              indexes.clear();
+            }
+          }
+          print('   unable to capture $remainToCapture more memory units');
           break;
 
         // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         //              Самый подходящий
         // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         case _FitType.bestFit:
+        // Выбор наиболее подходящего сегмента и занятие ячеек памяти
+          int error = 0;
+          while (error < _memoryUnits.length) {
+            for (final segment in segments) {
+              if (segment.length - error == remainToCapture) {
+                for (var i = 0; i < file.numberOfMemoryUnits; i++) {
+                  segment.memoryUnits[i].capture(file: file);
+                }
+                print('   captured $remainToCapture more memory units');
+                return true;
+              }
+            }
+            error++;
+          }
+          print('   unable to capture $remainToCapture more memory units');
           break;
 
         // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         //            Самый неподходящий
         // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         case _FitType.worstFit:
+        // Выбор наименее подходящего сегмента и занятие ячеек памяти
+          Segment maxSegment = segments.first;
+          for (final segment in segments) {
+            if (segment.length > maxSegment.length) maxSegment = segment;
+          }
+          if (maxSegment.length >= remainToCapture) {
+            for (var i = 0; i < file.numberOfMemoryUnits; i++) {
+              maxSegment.memoryUnits[i].capture(file: file);
+            }
+            print('   captured $remainToCapture more memory units');
+            return true;
+          }
+          print('   unable to capture $remainToCapture more memory units');
           break;
       }
     }
@@ -301,8 +408,6 @@ class MemoryController {
   /// Возвращает true, если все ячейки свободны, возвращает false, если есть хотя бы
   /// одна занятая ячейка или диапазон задан некорректно
   bool _rangeIsEmpty({required int start, required int end}) {
-    print('   start - $start');
-    print('   end - $end');
     if (start >= 0 && end < _memoryUnits.length) {
       for (var i = start; i < end; i++) {
         if (_memoryUnits[i].isBusy) return false;
