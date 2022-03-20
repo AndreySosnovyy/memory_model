@@ -40,7 +40,7 @@ class MemoryController {
 
   /// Обработка поступившего события на добавление/расширения/удаления файла
   void handleFile(FileEvent event) {
-    final _FitType _fitType = _FitType.nextFit;
+    final _FitType _fitType = _FitType.worstFit;
 
     switch (event.runtimeType) {
       // Добавление нового файла
@@ -266,7 +266,7 @@ class MemoryController {
       return true;
     } else {
       var numberOfCapturedUnits = 0;
-      for (var i = indexes.last + 1; i < file.numberOfMemoryUnits; i++) {
+      for (var i = indexes.last + 1; i < numberOfRequestedUnits; i++) {
         if (_memoryUnits[i].isNotBusy) {
           _memoryUnits[i].capture(file: file);
           numberOfCapturedUnits += 1;
@@ -350,7 +350,7 @@ class MemoryController {
           while (error < _memoryUnits.length) {
             for (final segment in segments) {
               if (segment.length - error == remainToCapture) {
-                for (var i = 0; i < file.numberOfMemoryUnits; i++) {
+                for (var i = 0; i < remainToCapture; i++) {
                   segment.memoryUnits[i].capture(file: file);
                 }
                 print('   captured $remainToCapture more memory units');
@@ -372,7 +372,7 @@ class MemoryController {
             if (segment.length > maxSegment.length) maxSegment = segment;
           }
           if (maxSegment.length >= remainToCapture) {
-            for (var i = 0; i < file.numberOfMemoryUnits; i++) {
+            for (var i = 0; i < remainToCapture; i++) {
               maxSegment.memoryUnits[i].capture(file: file);
             }
             print('   captured $remainToCapture more memory units');
