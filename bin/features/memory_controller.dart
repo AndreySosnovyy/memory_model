@@ -38,9 +38,12 @@ class MemoryController {
   /// Последняя занятая предыдущим файлом ячейка памяти
   int lastCapturedUnit = 0;
 
+  double globalAverageNumberOfSegmentsPerFile = 0;
+  double globalAverageLengthOfSegment = 0;
+
   /// Обработка поступившего события на добавление/расширения/удаления файла
   void handleFile(FileEvent event) {
-    final _FitType _fitType = _FitType.firstFit;
+    final _FitType _fitType = _FitType.worstFit;
 
     switch (event.runtimeType) {
       // Добавление нового файла
@@ -89,18 +92,39 @@ class MemoryController {
 
       // Неизвестное событие
       default:
-        print('Undefined event type - ${event.file.name}');
+        print('   Undefined event type - ${event.file.name}. Skipped!');
         break;
     }
 
-    print('   Units ratio = ${unitsRatio * 100} %');
+    if (globalAverageLengthOfSegment == 0) {
+      globalAverageLengthOfSegment = averageLengthOfSegment;
+    } else {
+      final local = averageLengthOfSegment;
+      if (local != 0) {
+        globalAverageLengthOfSegment =
+            (globalAverageLengthOfSegment + local) / 2;
+      }
+    }
 
-    print('   AverageNumberOfSegmentsPerFile - $averageNumberOfSegmentsPerFile');
-    print('   AverageLengthOfSegment - $averageLengthOfSegment');
+    if (globalAverageNumberOfSegmentsPerFile == 0) {
+      globalAverageNumberOfSegmentsPerFile = averageNumberOfSegmentsPerFile;
+    } else {
+      final local = averageNumberOfSegmentsPerFile;
+      if (local != 0) {
+        globalAverageNumberOfSegmentsPerFile =
+            (globalAverageNumberOfSegmentsPerFile + local) / 2;
+      }
+    }
+
+    print('   Units ratio = ${unitsRatio * 100} %');
+    print(
+        '   AverageNumberOfSegmentsPerFile - $globalAverageNumberOfSegmentsPerFile');
+    print('   AverageLengthOfSegment - $globalAverageLengthOfSegment');
+    print('\n--------------------------------------------------------------\n');
   }
 
   /// Возвращает среднее количество сегментов на файл или null, если нет ни одного файла
-  double? get averageNumberOfSegmentsPerFile {
+  double get averageNumberOfSegmentsPerFile {
     final listOfSegments = <Segment>[Segment()];
     for (var i = 0; i < _memoryUnits.length; i++) {
       if (_memoryUnits[i].file != null) {
@@ -116,11 +140,11 @@ class MemoryController {
     }
 
     final result = listOfSegments.length / MockFilesEventsProvider.files.length;
-    return result == double.infinity ? null : result;
+    return result == double.infinity ? 0 : result;
   }
 
   /// Возвращает среднюю длину сегмента или null, если нет ни одного сегмента
-  double? get averageLengthOfSegment {
+  double get averageLengthOfSegment {
     final listOfSegments = <Segment>[Segment()];
     for (var i = 0; i < _memoryUnits.length; i++) {
       if (_memoryUnits[i].file != null) {
@@ -140,7 +164,7 @@ class MemoryController {
       numberOfSegments += listOfSegments[i].length;
     }
     final result = numberOfSegments / listOfSegments.length;
-    return result == double.infinity ? null : result;
+    return result == double.infinity ? 0 : result;
   }
 
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
